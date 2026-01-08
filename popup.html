@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terse Settings</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Terse</h1>
+    
+    <div class="section">
+      <button id="summarizeBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">Summarize Page</button>
+      <p class="help-text" style="text-align: center; margin-bottom: 0;">Or select text first, then click to summarize selection</p>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="section">
+      <label for="apiKey">OpenAI API Key</label>
+      <div class="input-group">
+        <input type="password" id="apiKey" placeholder="Enter your API key">
+        <button id="toggleKey" class="toggle-btn" title="Show/Hide API key">👁</button>
+      </div>
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="saveKey" checked>
+          <span>Save for future use (persistent)</span>
+        </label>
+      </div>
+      <div class="button-group">
+        <button id="saveKeyBtn" class="btn btn-primary">Save API Key</button>
+        <button id="removeKeyBtn" class="btn btn-secondary">Remove API Key</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <label for="model">Model</label>
+      <select id="model">
+        <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+        <option value="gpt-4">gpt-4</option>
+        <option value="gpt-4-turbo-preview">gpt-4-turbo-preview</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <label for="prompt">Prompt</label>
+      <textarea id="prompt" rows="4" placeholder="Enter your custom prompt"></textarea>
+      <div class="button-group">
+        <button id="resetPrompt" class="btn btn-secondary">Reset to Default</button>
+      </div>
+      <p class="help-text">Default: "Summarize this text into a single sentence that describes the primary point of the text"</p>
+    </div>
+
+    <div class="section">
+      <button id="saveSettings" class="btn btn-primary">Save Settings</button>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
