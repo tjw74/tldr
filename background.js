@@ -49,7 +49,7 @@ async function handleSummarize(text) {
     }
 
     // Get model and prompt
-    const model = localData.model || 'gpt-3.5-turbo';
+    const model = localData.model || 'gpt-5-nano';
     const prompt = localData.prompt || DEFAULT_PROMPT;
     
     console.log('Terse background: Using model:', model);

@@ -31,7 +31,7 @@ async function loadSettings() {
     if (localData.model) {
       document.getElementById('model').value = localData.model;
     } else {
-      document.getElementById('model').value = 'gpt-3.5-turbo';
+      document.getElementById('model').value = 'gpt-5-nano';
     }
 
     // Load prompt
