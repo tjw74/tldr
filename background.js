@@ -1,4 +1,4 @@
-const DEFAULT_PROMPT = "Summarize this text into a single sentence that describes the primary point of the text";
+const DEFAULT_PROMPT = "Extract the core message and most important takeaways from this text. What is the essential information the author wants the reader to know? Focus on the actual content and meaning, not a description of what the text is. Respond in 2-4 short sentences maximum - prioritize only the most critical points that a reader needs to understand.";
 
 // Set up context menu on install
 chrome.runtime.onInstalled.addListener(() => {
@@ -117,20 +117,7 @@ async function handleSummarize(text) {
       ]
     };
     
-    // Use the correct token limit parameter based on model
-    // Reasoning models (GPT-5 series) need more tokens because they use tokens for reasoning
-    // We need enough tokens for both reasoning AND the actual output
-    if (isNewModel) {
-      // For reasoning models, allocate more tokens to ensure we get actual output
-      // Reasoning models use tokens for internal reasoning, so we need extra headroom
-      if (model.startsWith('gpt-5')) {
-        apiBody.max_completion_tokens = 500; // More tokens for reasoning models
-      } else {
-        apiBody.max_completion_tokens = 150;
-      }
-    } else {
-      apiBody.max_tokens = 150;
-    }
+    // No token limits - let the model generate a complete summary
     
     // Only add temperature if the model supports it
     if (supportsTemperature) {

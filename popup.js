@@ -1,4 +1,4 @@
-const DEFAULT_PROMPT = "Summarize this text into a single sentence that describes the primary point of the text";
+const DEFAULT_PROMPT = "Extract the core message and most important takeaways from this text. What is the essential information the author wants the reader to know? Focus on the actual content and meaning, not a description of what the text is. Respond in 2-4 short sentences maximum - prioritize only the most critical points that a reader needs to understand.";
 
 // Load settings on popup open
 document.addEventListener('DOMContentLoaded', async () => {
