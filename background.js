@@ -21,8 +21,10 @@ const MODEL_PRICING = {
 async function trackUsage(model, usage, requestCost) {
   try {
     // Get current usage stats
-    const stats = await chrome.storage.local.get(['usageStats']) || {};
+    const stats = await chrome.storage.local.get(['usageStats']);
     const usageStats = stats.usageStats || {};
+    
+    console.log('Terse background: Tracking usage for model:', model, 'Cost:', requestCost);
     
     // Initialize model stats if needed
     if (!usageStats[model]) {
@@ -61,6 +63,12 @@ async function trackUsage(model, usage, requestCost) {
     
     // Save updated stats
     await chrome.storage.local.set({ usageStats });
+    console.log('Terse background: Usage stats saved:', {
+      model,
+      requests: usageStats[model].requests,
+      totalCost: usageStats[model].totalCost,
+      lastRequestCost: usageStats[model].lastRequestCost
+    });
   } catch (error) {
     console.error('Terse background: Error tracking usage:', error);
   }

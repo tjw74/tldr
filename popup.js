@@ -195,6 +195,8 @@ async function summarizePage() {
 
       if (response && response.success) {
         showStatus('Summary generated!', 'success');
+        // Refresh cost summary to show updated stats
+        await loadCostSummary();
         // Close popup after a brief delay
         setTimeout(() => window.close(), 500);
       } else {
@@ -231,6 +233,8 @@ async function loadCostSummary() {
     const data = await chrome.storage.local.get(['usageStats', 'model']);
     const usageStats = data.usageStats || {};
     const currentModel = data.model || 'gpt-5-nano';
+    
+    console.log('Terse popup: Loading cost summary', { usageStats, currentModel });
     
     // Total stats
     const total = usageStats.total || { requests: 0, totalCost: 0 };
