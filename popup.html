@@ -67,6 +67,34 @@
       <button id="saveSettings" class="btn btn-primary">Save Settings</button>
     </div>
 
+    <div class="divider"></div>
+
+    <div class="section">
+      <label>Usage & Costs</label>
+      <div id="costSummary" class="cost-summary">
+        <div class="cost-item">
+          <span class="cost-label">Total Requests:</span>
+          <span id="totalRequests" class="cost-value">0</span>
+        </div>
+        <div class="cost-item">
+          <span class="cost-label">Total Cost:</span>
+          <span id="totalCost" class="cost-value">$0.00</span>
+        </div>
+        <div class="cost-item">
+          <span class="cost-label">Current Model Cost:</span>
+          <span id="currentModelCost" class="cost-value">-</span>
+        </div>
+        <div class="cost-item">
+          <span class="cost-label">Last Request Cost:</span>
+          <span id="lastRequestCost" class="cost-value">-</span>
+        </div>
+        <details class="cost-details">
+          <summary class="cost-summary-toggle">View by Model</summary>
+          <div id="modelBreakdown" class="model-breakdown"></div>
+        </details>
+      </div>
+    </div>
+
     <div id="status" class="status"></div>
   </div>
   <script src="popup.js"></script>

@@ -1,5 +1,76 @@
 const DEFAULT_PROMPT = "Extract the core message and most important takeaways from this text. What is the essential information the author wants the reader to know? Focus on the actual content and meaning, not a description of what the text is. Respond in 2-4 short sentences maximum - prioritize only the most critical points that a reader needs to understand.";
 
+// OpenAI pricing per 1M tokens (as of 2026) - input/output pricing
+const MODEL_PRICING = {
+  'gpt-5.2': { input: 2.50, output: 10.00 },
+  'gpt-5.2-pro': { input: 5.00, output: 20.00 },
+  'gpt-5-mini': { input: 0.15, output: 0.60 },
+  'gpt-5-nano': { input: 0.075, output: 0.30 },
+  'gpt-5': { input: 2.50, output: 10.00 },
+  'gpt-4.1': { input: 2.50, output: 10.00 },
+  'gpt-4.1-mini': { input: 0.15, output: 0.60 },
+  'gpt-4.1-nano': { input: 0.075, output: 0.30 },
+  'gpt-4o': { input: 2.50, output: 10.00 },
+  'gpt-4o-mini': { input: 0.15, output: 0.60 },
+  'gpt-4-turbo': { input: 10.00, output: 30.00 },
+  'gpt-4': { input: 30.00, output: 60.00 },
+  'gpt-3.5-turbo': { input: 0.50, output: 1.50 }
+};
+
+// Track API usage and costs
+async function trackUsage(model, usage, requestCost) {
+  try {
+    // Get current usage stats
+    const stats = await chrome.storage.local.get(['usageStats']) || {};
+    const usageStats = stats.usageStats || {};
+    
+    // Initialize model stats if needed
+    if (!usageStats[model]) {
+      usageStats[model] = {
+        requests: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalCost: 0,
+        lastRequestCost: 0
+      };
+    }
+    
+    // Update stats
+    const inputTokens = usage.prompt_tokens || 0;
+    const outputTokens = usage.completion_tokens || 0;
+    
+    usageStats[model].requests += 1;
+    usageStats[model].inputTokens += inputTokens;
+    usageStats[model].outputTokens += outputTokens;
+    usageStats[model].totalCost += requestCost;
+    usageStats[model].lastRequestCost = requestCost;
+    
+    // Update total stats
+    if (!usageStats.total) {
+      usageStats.total = {
+        requests: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalCost: 0
+      };
+    }
+    usageStats.total.requests += 1;
+    usageStats.total.inputTokens += inputTokens;
+    usageStats.total.outputTokens += outputTokens;
+    usageStats.total.totalCost += requestCost;
+    
+    // Save updated stats
+    await chrome.storage.local.set({ usageStats });
+  } catch (error) {
+    console.error('Terse background: Error tracking usage:', error);
+  }
+}
+
+// Get cost for a model
+function getModelCost(model) {
+  return MODEL_PRICING[model] || MODEL_PRICING['gpt-3.5-turbo'];
+}
+
 // Set up context menu on install
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -256,6 +327,19 @@ async function handleSummarize(text) {
     }
 
     console.log('Terse background: Summary generated successfully');
+    
+    // Track usage and calculate cost
+    if (data.usage) {
+      const pricing = MODEL_PRICING[model] || MODEL_PRICING['gpt-3.5-turbo'];
+      const inputTokens = data.usage.prompt_tokens || 0;
+      const outputTokens = data.usage.completion_tokens || 0;
+      const inputCost = (inputTokens / 1000000) * pricing.input;
+      const outputCost = (outputTokens / 1000000) * pricing.output;
+      const requestCost = inputCost + outputCost;
+      
+      await trackUsage(model, data.usage, requestCost);
+    }
+    
     return {
       success: true,
       summary: summary

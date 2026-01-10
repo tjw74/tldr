@@ -3,6 +3,7 @@ const DEFAULT_PROMPT = "Extract the core message and most important takeaways fr
 // Load settings on popup open
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
+  await loadCostSummary();
   
   // Event listeners
   document.getElementById('summarizeBtn').addEventListener('click', summarizePage);
@@ -11,6 +12,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('toggleKey').addEventListener('click', toggleKeyVisibility);
   document.getElementById('saveSettings').addEventListener('click', saveSettings);
   document.getElementById('resetPrompt').addEventListener('click', resetPrompt);
+  
+  // Listen for usage updates
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes.usageStats) {
+      loadCostSummary();
+    }
+  });
 });
 
 async function loadSettings() {
@@ -199,6 +207,83 @@ async function summarizePage() {
   } catch (error) {
     showStatus('Error: ' + error.message, 'error');
   }
+}
+
+// Model pricing (must match background.js)
+const MODEL_PRICING = {
+  'gpt-5.2': { input: 2.50, output: 10.00 },
+  'gpt-5.2-pro': { input: 5.00, output: 20.00 },
+  'gpt-5-mini': { input: 0.15, output: 0.60 },
+  'gpt-5-nano': { input: 0.075, output: 0.30 },
+  'gpt-5': { input: 2.50, output: 10.00 },
+  'gpt-4.1': { input: 2.50, output: 10.00 },
+  'gpt-4.1-mini': { input: 0.15, output: 0.60 },
+  'gpt-4.1-nano': { input: 0.075, output: 0.30 },
+  'gpt-4o': { input: 2.50, output: 10.00 },
+  'gpt-4o-mini': { input: 0.15, output: 0.60 },
+  'gpt-4-turbo': { input: 10.00, output: 30.00 },
+  'gpt-4': { input: 30.00, output: 60.00 },
+  'gpt-3.5-turbo': { input: 0.50, output: 1.50 }
+};
+
+async function loadCostSummary() {
+  try {
+    const data = await chrome.storage.local.get(['usageStats', 'model']);
+    const usageStats = data.usageStats || {};
+    const currentModel = data.model || 'gpt-5-nano';
+    
+    // Total stats
+    const total = usageStats.total || { requests: 0, totalCost: 0 };
+    document.getElementById('totalRequests').textContent = total.requests || 0;
+    document.getElementById('totalCost').textContent = formatCost(total.totalCost || 0);
+    
+    // Current model cost per 1M tokens
+    const pricing = MODEL_PRICING[currentModel] || MODEL_PRICING['gpt-3.5-turbo'];
+    document.getElementById('currentModelCost').textContent = 
+      `$${pricing.input.toFixed(3)}/$1M input, $${pricing.output.toFixed(3)}/$1M output`;
+    
+    // Last request cost
+    const modelStats = usageStats[currentModel];
+    if (modelStats && modelStats.lastRequestCost !== undefined) {
+      document.getElementById('lastRequestCost').textContent = formatCost(modelStats.lastRequestCost);
+    } else {
+      document.getElementById('lastRequestCost').textContent = '-';
+    }
+    
+    // Model breakdown
+    const breakdown = document.getElementById('modelBreakdown');
+    breakdown.innerHTML = '';
+    
+    // Sort models by total cost (descending)
+    const modelEntries = Object.entries(usageStats)
+      .filter(([key]) => key !== 'total')
+      .sort((a, b) => (b[1].totalCost || 0) - (a[1].totalCost || 0));
+    
+    if (modelEntries.length === 0) {
+      breakdown.innerHTML = '<div class="cost-help-text">No usage data yet</div>';
+    } else {
+      modelEntries.forEach(([model, stats]) => {
+        const item = document.createElement('div');
+        item.className = 'model-breakdown-item';
+        item.innerHTML = `
+          <div class="model-name">${model}</div>
+          <div class="model-stats">
+            <span>${stats.requests || 0} requests</span>
+            <span>${formatCost(stats.totalCost || 0)}</span>
+          </div>
+        `;
+        breakdown.appendChild(item);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading cost summary:', error);
+  }
+}
+
+function formatCost(cost) {
+  if (cost === 0) return '$0.00';
+  if (cost < 0.01) return `$${cost.toFixed(4)}`;
+  return `$${cost.toFixed(2)}`;
 }
 
 function showStatus(message, type) {
