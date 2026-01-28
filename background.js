@@ -156,6 +156,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // Handle messages from popup or content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'ping') {
+    sendResponse({ ok: true });
+    return false;
+  }
   if (request.action === 'summarize') {
     handleSummarize(request.text).then(sendResponse);
     return true; // Keep channel open for async response

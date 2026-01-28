@@ -183,6 +183,13 @@ async function summarizePage() {
       return;
     }
 
+    // Wake background so it's ready when content script sends the summarize request
+    try {
+      await chrome.runtime.sendMessage({ action: 'ping' });
+    } catch (_) {
+      // ignore
+    }
+
     // Always inject content script and CSS first to ensure they're loaded
     try {
       // Inject CSS

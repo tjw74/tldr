@@ -278,7 +278,10 @@ async function summarizeText(useSelection = false) {
     }
   } catch (error) {
     console.error('tldr error:', error);
-    showErrorOverlay('An error occurred: ' + error.message);
+    const msg = (error.message && /receiving end does not exist|could not establish connection/i.test(error.message))
+      ? 'Connection lost. Refresh this page and try again.'
+      : ('An error occurred: ' + error.message);
+    showErrorOverlay(msg);
     return { success: false, error: error.message };
   }
 }
