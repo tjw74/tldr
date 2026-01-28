@@ -183,8 +183,6 @@ async function summarizePage() {
       return;
     }
 
-    showStatus('Starting summary...', 'success');
-
     // Always inject content script and CSS first to ensure they're loaded
     try {
       // Inject CSS
@@ -211,21 +209,14 @@ async function summarizePage() {
         console.error('tldr popup: Error checking selection:', checkError);
       }
       
-      // Trigger summarize
-      const response = await chrome.tabs.sendMessage(tab.id, {
+      // Trigger summarize (don't await response — overlay will show result)
+      chrome.tabs.sendMessage(tab.id, {
         action: 'summarize',
         useSelection: useSelection
-      });
+      }).catch(err => console.error('tldr popup:', err));
 
-      if (response && response.success) {
-        showStatus('Summary generated!', 'success');
-        // Refresh cost summary to show updated stats
-        await loadCostSummary();
-        // Close popup after a brief delay
-        setTimeout(() => window.close(), 500);
-      } else {
-        showStatus(response?.error || 'Failed to summarize', 'error');
-      }
+      // Close popup so user sees the page and overlay
+      window.close();
     } catch (error) {
       console.error('tldr popup error:', error);
       showStatus('Error: ' + error.message, 'error');
