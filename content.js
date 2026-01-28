@@ -145,7 +145,7 @@ function showOverlay(summary) {
   overlay.innerHTML = `
     <div class="terse-overlay-content">
       <div class="terse-header">
-        <span class="terse-title">tldr</span>
+        <span class="terse-title">Terse</span>
         <button class="terse-close" id="terse-close">×</button>
       </div>
       <div class="terse-summary" id="terse-summary">${escapeHtml(summary)}</div>
@@ -219,7 +219,7 @@ function showErrorOverlay(message) {
   overlay.innerHTML = `
     <div class="terse-overlay-content">
       <div class="terse-header">
-        <span class="terse-title">tldr</span>
+        <span class="terse-title">Terse</span>
         <button class="terse-close" id="terse-close">×</button>
       </div>
       <div class="terse-error">${escapeHtml(message)}</div>
