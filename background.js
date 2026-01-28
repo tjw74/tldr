@@ -42,7 +42,7 @@ async function trackUsage(model, usage, requestCost) {
     const stats = await chrome.storage.local.get(['usageStats']);
     const usageStats = stats.usageStats || {};
     
-    console.log('Terse background: Tracking usage for model:', model, 'Cost:', requestCost);
+    console.log('tldr background: Tracking usage for model:', model, 'Cost:', requestCost);
     
     // Initialize model stats if needed
     if (!usageStats[model]) {
@@ -81,14 +81,14 @@ async function trackUsage(model, usage, requestCost) {
     
     // Save updated stats
     await chrome.storage.local.set({ usageStats });
-    console.log('Terse background: Usage stats saved:', {
+    console.log('tldr background: Usage stats saved:', {
       model,
       requests: usageStats[model].requests,
       totalCost: usageStats[model].totalCost,
       lastRequestCost: usageStats[model].lastRequestCost
     });
   } catch (error) {
-    console.error('Terse background: Error tracking usage:', error);
+    console.error('tldr background: Error tracking usage:', error);
   }
 }
 
@@ -100,15 +100,15 @@ function getModelCost(model) {
 // Set up context menu on install
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
-    id: 'terse-summarize',
-    title: 'Summarize with Terse',
+    id: 'tldr-summarize',
+    title: 'Summarize with tldr',
     contexts: ['page', 'selection']
   });
 });
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'terse-summarize') {
+  if (info.menuItemId === 'tldr-summarize') {
     try {
       // Check if we can inject into this page
       const restricted = ['chrome://', 'chrome-extension://', 'edge://', 'moz-extension://', 'about:'];
@@ -137,7 +137,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         // Wait for script to initialize
         await new Promise(resolve => setTimeout(resolve, 200));
       } catch (scriptError) {
-        console.error('Terse: Could not inject content script:', scriptError);
+        console.error('tldr: Could not inject content script:', scriptError);
         return;
       }
 
@@ -146,10 +146,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         action: 'summarize',
         useSelection: useSelection
       }).catch(error => {
-        console.error('Terse: Error sending message:', error);
+        console.error('tldr: Error sending message:', error);
       });
     } catch (error) {
-      console.error('Terse: Error in context menu handler:', error);
+      console.error('tldr: Error in context menu handler:', error);
     }
   }
 });
@@ -165,7 +165,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Handle summarize API call
 async function handleSummarize(text) {
   try {
-    console.log('Terse background: Starting API call, text length:', text ? text.length : 0);
+    console.log('tldr background: Starting API call, text length:', text ? text.length : 0);
     
     // Get API key (check both storages; session not in older Firefox)
     const localData = await chrome.storage.local.get(['apiKey', 'model', 'prompt']);
@@ -174,7 +174,7 @@ async function handleSummarize(text) {
     
     const apiKey = localData.apiKey || sessionData.apiKey;
     
-    console.log('Terse background: API key found:', apiKey ? 'Yes' : 'No');
+    console.log('tldr background: API key found:', apiKey ? 'Yes' : 'No');
     
     if (!apiKey) {
       return {
@@ -187,7 +187,7 @@ async function handleSummarize(text) {
     const model = localData.model || 'gpt-5-nano';
     const prompt = localData.prompt || DEFAULT_PROMPT;
     
-    console.log('Terse background: Using model:', model);
+    console.log('tldr background: Using model:', model);
 
     // Determine which parameters to use based on model
     // GPT-5 series, GPT-4.1 series, and o-series models use max_completion_tokens
@@ -224,8 +224,8 @@ async function handleSummarize(text) {
     }
 
     // Call OpenAI API
-    console.log('Terse background: Calling OpenAI API...');
-    console.log('Terse background: API body:', JSON.stringify(apiBody, null, 2));
+    console.log('tldr background: Calling OpenAI API...');
+    console.log('tldr background: API body:', JSON.stringify(apiBody, null, 2));
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -236,18 +236,18 @@ async function handleSummarize(text) {
       body: JSON.stringify(apiBody)
     });
 
-    console.log('Terse background: API response status:', response.status);
+    console.log('tldr background: API response status:', response.status);
 
     if (!response.ok) {
       let errorData = {};
       try {
         errorData = await response.json();
       } catch (parseError) {
-        console.error('Terse background: Could not parse error response');
+        console.error('tldr background: Could not parse error response');
       }
       
-      console.error('Terse background: API error status:', response.status);
-      console.error('Terse background: API error data:', JSON.stringify(errorData, null, 2));
+      console.error('tldr background: API error status:', response.status);
+      console.error('tldr background: API error data:', JSON.stringify(errorData, null, 2));
       
       let errorMessage = 'Failed to summarize text';
       
@@ -275,7 +275,7 @@ async function handleSummarize(text) {
     }
 
     const data = await response.json();
-    console.log('Terse background: API response data:', JSON.stringify(data, null, 2));
+    console.log('tldr background: API response data:', JSON.stringify(data, null, 2));
     
     // Handle different response formats - OpenAI Chat Completions API standard format
     let summary = null;
@@ -286,7 +286,7 @@ async function handleSummarize(text) {
       
       // Check finish_reason to see if response was cut off
       if (choice.finish_reason && choice.finish_reason !== 'stop') {
-        console.warn('Terse background: Response finish_reason:', choice.finish_reason);
+        console.warn('tldr background: Response finish_reason:', choice.finish_reason);
       }
       
       // Standard format: choice.message.content
@@ -299,7 +299,7 @@ async function handleSummarize(text) {
             summary = trimmed;
           } else if (choice.finish_reason === 'length') {
             // Response was cut off - this means all tokens were used for reasoning
-            console.warn('Terse background: Content is empty and finish_reason is "length" - tokens exhausted');
+            console.warn('tldr background: Content is empty and finish_reason is "length" - tokens exhausted');
             return {
               success: false,
               error: 'Response was cut off. The model used all tokens for reasoning. Try increasing max_completion_tokens or using a non-reasoning model like GPT-4.1.'
@@ -333,12 +333,12 @@ async function handleSummarize(text) {
       }
     }
 
-    console.log('Terse background: Extracted summary:', summary ? `"${summary.substring(0, 50)}..."` : 'null');
-    console.log('Terse background: Summary length:', summary ? summary.length : 0);
+    console.log('tldr background: Extracted summary:', summary ? `"${summary.substring(0, 50)}..."` : 'null');
+    console.log('tldr background: Summary length:', summary ? summary.length : 0);
 
     if (!summary || summary.length === 0) {
-      console.error('Terse background: No summary found in response.');
-      console.error('Terse background: Response structure:', {
+      console.error('tldr background: No summary found in response.');
+      console.error('tldr background: Response structure:', {
         hasChoices: !!data.choices,
         choicesLength: data.choices?.length || 0,
         firstChoiceKeys: data.choices?.[0] ? Object.keys(data.choices[0]) : null,
@@ -347,14 +347,14 @@ async function handleSummarize(text) {
         hasContent: !!data.content,
         hasMessage: !!data.message
       });
-      console.error('Terse background: Full response:', JSON.stringify(data, null, 2));
+      console.error('tldr background: Full response:', JSON.stringify(data, null, 2));
       return {
         success: false,
-        error: 'No summary returned from API. The response may be empty or in an unexpected format. Check the extension service worker console (chrome://extensions -> Terse -> Service worker -> Inspect) for details.'
+        error: 'No summary returned from API. The response may be empty or in an unexpected format. Check the extension service worker console (chrome://extensions -> tldr -> Service worker -> Inspect) for details.'
       };
     }
 
-    console.log('Terse background: Summary generated successfully');
+    console.log('tldr background: Summary generated successfully');
     
     // Track usage and calculate cost
     if (data.usage) {
@@ -373,7 +373,7 @@ async function handleSummarize(text) {
       summary: summary
     };
   } catch (error) {
-    console.error('Terse background: Exception:', error);
+    console.error('tldr background: Exception:', error);
     return {
       success: false,
       error: 'Network error: ' + error.message

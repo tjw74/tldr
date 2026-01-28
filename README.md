@@ -1,4 +1,4 @@
-# Terse - Browser Extension
+# tldr - Browser Extension
 
 A minimal browser extension that summarizes web page text into a single sentence using OpenAI's API. Works on **Chrome**, **Edge**, **Brave**, **Opera**, and **Firefox**.
 
@@ -36,13 +36,13 @@ Firefox uses Manifest V2 and a separate manifest. Build a Firefox package, then 
    ```
 2. Open Firefox and go to `about:debugging`
 3. Click "This Firefox" → "Load Temporary Add-on"
-4. Choose `terse-firefox.xpi` (created in the project root)
+4. Choose `tldr-firefox.xpi` (created in the project root)
 
-For signed distribution, submit `terse-firefox.xpi` (or the unpacked folder built from `manifest.firefox.json`) to addons.mozilla.org.
+For signed distribution, submit `tldr-firefox.xpi` (or the unpacked folder built from `manifest.firefox.json`) to addons.mozilla.org.
 
 ## Setup
 
-1. Click the Terse extension icon in your browser toolbar
+1. Click the tldr extension icon in your browser toolbar
 2. Enter your OpenAI API key
 3. Choose whether to save it persistently (default) or session-only
 4. Optionally customize the prompt and select a different model
@@ -51,12 +51,12 @@ For signed distribution, submit `terse-firefox.xpi` (or the unpacked folder buil
 ## Usage
 
 ### Method 1: Extension Icon
-- Click the Terse icon in the toolbar to summarize the entire page
+- Click the tldr icon in the toolbar to summarize the entire page
 - Or select text first, then click the icon to summarize only the selection
 
 ### Method 2: Right-Click Menu
 - Right-click anywhere on the page
-- Select "Summarize with Terse"
+- Select "Summarize with tldr"
 - If text is selected, it will summarize the selection; otherwise, it summarizes the entire page
 
 ## Icons

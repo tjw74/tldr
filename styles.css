@@ -253,7 +253,7 @@ textarea {
 }
 
 /* Overlay Styles */
-#terse-overlay {
+#tldr-overlay {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -273,7 +273,7 @@ textarea {
   }
 }
 
-.terse-overlay-content {
+.tldr-overlay-content {
   background-color: #1a1a1a;
   border: 1px solid #333333;
   border-radius: 8px;
@@ -281,20 +281,20 @@ textarea {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
-.terse-header {
+.tldr-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.terse-title {
+.tldr-title {
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
 }
 
-.terse-close {
+.tldr-close {
   background: none;
   border: none;
   color: #888888;
@@ -309,11 +309,11 @@ textarea {
   line-height: 1;
 }
 
-.terse-close:hover {
+.tldr-close:hover {
   color: #ffffff;
 }
 
-.terse-summary {
+.tldr-summary {
   font-size: 14px;
   line-height: 1.6;
   color: #ffffff;
@@ -321,18 +321,18 @@ textarea {
   word-wrap: break-word;
 }
 
-.terse-error {
+.tldr-error {
   font-size: 14px;
   color: #ff8888;
   margin-bottom: 12px;
 }
 
-.terse-actions {
+.tldr-actions {
   display: flex;
   gap: 8px;
 }
 
-.terse-copy {
+.tldr-copy {
   padding: 8px 16px;
   background-color: #ffffff;
   color: #000000;
@@ -344,18 +344,18 @@ textarea {
   transition: background-color 0.2s;
 }
 
-.terse-copy:hover {
+.tldr-copy:hover {
   background-color: #e0e0e0;
 }
 
-.terse-loading {
+.tldr-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
 }
 
-.terse-spinner {
+.tldr-spinner {
   width: 32px;
   height: 32px;
   border: 3px solid #333333;
@@ -371,7 +371,7 @@ textarea {
   }
 }
 
-.terse-loading-text {
+.tldr-loading-text {
   font-size: 14px;
   color: #888888;
 }

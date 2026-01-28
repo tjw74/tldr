@@ -208,7 +208,7 @@ async function summarizePage() {
         const checkResponse = await chrome.tabs.sendMessage(tab.id, { action: 'checkSelection' });
         useSelection = checkResponse && checkResponse.hasSelection;
       } catch (checkError) {
-        console.error('Terse popup: Error checking selection:', checkError);
+        console.error('tldr popup: Error checking selection:', checkError);
       }
       
       // Trigger summarize
@@ -227,7 +227,7 @@ async function summarizePage() {
         showStatus(response?.error || 'Failed to summarize', 'error');
       }
     } catch (error) {
-      console.error('Terse popup error:', error);
+      console.error('tldr popup error:', error);
       showStatus('Error: ' + error.message, 'error');
     }
   } catch (error) {
@@ -258,7 +258,7 @@ async function loadCostSummary() {
     const usageStats = data.usageStats || {};
     const currentModel = data.model || 'gpt-5-nano';
     
-    console.log('Terse popup: Loading cost summary', { usageStats, currentModel });
+    console.log('tldr popup: Loading cost summary', { usageStats, currentModel });
     
     // Total stats
     const total = usageStats.total || { requests: 0, totalCost: 0 };
