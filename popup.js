@@ -1,3 +1,21 @@
+// Firefox MV2 polyfill: chrome.scripting not available; use chrome.tabs.executeScript/insertCSS
+if (typeof chrome !== 'undefined' && !chrome.scripting && chrome.tabs) {
+  chrome.scripting = {
+    executeScript(opts) {
+      const tabId = opts.target?.tabId;
+      const file = opts.files?.[0];
+      if (!tabId || !file) return Promise.reject(new Error('Invalid arguments'));
+      return chrome.tabs.executeScript(tabId, { file });
+    },
+    insertCSS(opts) {
+      const tabId = opts.target?.tabId;
+      const file = opts.files?.[0];
+      if (!tabId || !file) return Promise.reject(new Error('Invalid arguments'));
+      return chrome.tabs.insertCSS(tabId, { file });
+    }
+  };
+}
+
 const DEFAULT_PROMPT = "Extract the core message and most important takeaways from this text. What is the essential information the author wants the reader to know? Focus on the actual content and meaning, not a description of what the text is. Respond in 2-4 short sentences maximum - prioritize only the most critical points that a reader needs to understand.";
 
 // Load settings on popup open
@@ -23,9 +41,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadSettings() {
   try {
-    // Load API key (check both local and session)
+    // Load API key (check both local and session; session not in older Firefox)
     const localData = await chrome.storage.local.get(['apiKey', 'saveKey', 'model', 'prompt']);
-    const sessionData = await chrome.storage.session.get(['apiKey']);
+    const sessionData = (chrome.storage && chrome.storage.session)
+      ? await chrome.storage.session.get(['apiKey']) : {};
     
     if (localData.apiKey) {
       document.getElementById('apiKey').value = localData.apiKey;
@@ -64,15 +83,18 @@ async function saveApiKey() {
 
   try {
     if (saveKey) {
-      // Save to persistent storage
       await chrome.storage.local.set({ apiKey, saveKey: true });
-      await chrome.storage.session.remove('apiKey');
+      if (chrome.storage && chrome.storage.session) await chrome.storage.session.remove('apiKey');
       showStatus('API key saved (persistent)', 'success');
     } else {
-      // Save to session storage
-      await chrome.storage.session.set({ apiKey });
-      await chrome.storage.local.remove('apiKey');
-      showStatus('API key saved (session only)', 'success');
+      if (chrome.storage && chrome.storage.session) {
+        await chrome.storage.session.set({ apiKey });
+        await chrome.storage.local.remove('apiKey');
+        showStatus('API key saved (session only)', 'success');
+      } else {
+        await chrome.storage.local.set({ apiKey, saveKey: false });
+        showStatus('API key saved (session storage not available)', 'success');
+      }
     }
   } catch (error) {
     showStatus('Error saving API key', 'error');
@@ -82,7 +104,7 @@ async function saveApiKey() {
 async function removeApiKey() {
   try {
     await chrome.storage.local.remove('apiKey');
-    await chrome.storage.session.remove('apiKey');
+    if (chrome.storage && chrome.storage.session) await chrome.storage.session.remove('apiKey');
     document.getElementById('apiKey').value = '';
     showStatus('API key removed', 'success');
   } catch (error) {
@@ -137,7 +159,8 @@ function resetPrompt() {
 async function summarizePage() {
   // Check if API key exists
   const localData = await chrome.storage.local.get(['apiKey']);
-  const sessionData = await chrome.storage.session.get(['apiKey']);
+  const sessionData = (chrome.storage && chrome.storage.session)
+    ? await chrome.storage.session.get(['apiKey']) : {};
   
   if (!localData.apiKey && !sessionData.apiKey) {
     showStatus('Please configure your API key first', 'error');
@@ -153,8 +176,9 @@ async function summarizePage() {
       return;
     }
 
-    // Check if we can inject into this page (chrome:// pages, etc. won't work)
-    if (tab.url && (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://'))) {
+    // Check if we can inject into this page (browser internals, extension pages, etc. won't work)
+    const restricted = ['chrome://', 'chrome-extension://', 'edge://', 'moz-extension://', 'about:'];
+    if (tab.url && restricted.some(p => tab.url.startsWith(p))) {
       showStatus('Cannot summarize this page type', 'error');
       return;
     }

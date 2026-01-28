@@ -1,3 +1,21 @@
+// Firefox MV2 polyfill: chrome.scripting not available; use chrome.tabs.executeScript/insertCSS
+if (typeof chrome !== 'undefined' && !chrome.scripting && chrome.tabs) {
+  chrome.scripting = {
+    executeScript(opts) {
+      const tabId = opts.target?.tabId;
+      const file = opts.files?.[0];
+      if (!tabId || !file) return Promise.reject(new Error('Invalid arguments'));
+      return chrome.tabs.executeScript(tabId, { file });
+    },
+    insertCSS(opts) {
+      const tabId = opts.target?.tabId;
+      const file = opts.files?.[0];
+      if (!tabId || !file) return Promise.reject(new Error('Invalid arguments'));
+      return chrome.tabs.insertCSS(tabId, { file });
+    }
+  };
+}
+
 const DEFAULT_PROMPT = "Extract the core message and most important takeaways from this text. What is the essential information the author wants the reader to know? Focus on the actual content and meaning, not a description of what the text is. Respond in 2-4 short sentences maximum - prioritize only the most critical points that a reader needs to understand.";
 
 // OpenAI pricing per 1M tokens (as of 2026) - input/output pricing
@@ -93,7 +111,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'terse-summarize') {
     try {
       // Check if we can inject into this page
-      if (tab.url && (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://'))) {
+      const restricted = ['chrome://', 'chrome-extension://', 'edge://', 'moz-extension://', 'about:'];
+      if (tab.url && restricted.some(p => tab.url.startsWith(p))) {
         return;
       }
 
@@ -148,9 +167,10 @@ async function handleSummarize(text) {
   try {
     console.log('Terse background: Starting API call, text length:', text ? text.length : 0);
     
-    // Get API key (check both storages)
+    // Get API key (check both storages; session not in older Firefox)
     const localData = await chrome.storage.local.get(['apiKey', 'model', 'prompt']);
-    const sessionData = await chrome.storage.session.get(['apiKey']);
+    const sessionData = (chrome.storage && chrome.storage.session)
+      ? await chrome.storage.session.get(['apiKey']) : {};
     
     const apiKey = localData.apiKey || sessionData.apiKey;
     

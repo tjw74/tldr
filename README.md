@@ -1,6 +1,6 @@
-# Terse - Chrome Extension
+# Terse - Browser Extension
 
-A minimal Chrome extension that summarizes web page text into a single sentence using OpenAI's API.
+A minimal browser extension that summarizes web page text into a single sentence using OpenAI's API. Works on **Chrome**, **Edge**, **Brave**, **Opera**, and **Firefox**.
 
 ## Features
 
@@ -13,11 +13,32 @@ A minimal Chrome extension that summarizes web page text into a single sentence 
 
 ## Installation
 
-1. Open Chrome and navigate to `chrome://extensions/`
+### Chrome, Edge, Brave, Opera (one build)
+
+Use the same unpacked folder; only the store you publish to differs.
+
+1. Open the browser’s extensions page:
+   - **Chrome:** `chrome://extensions/`
+   - **Edge:** `edge://extensions/`
+   - **Brave:** `brave://extensions/`
 2. Enable "Developer mode" (toggle in top right)
 3. Click "Load unpacked"
-4. Select the `terse` folder
-5. The extension icon will appear in your browser toolbar
+4. Select this project folder (the one containing `manifest.json`)
+5. The extension icon will appear in your toolbar
+
+### Firefox
+
+Firefox uses Manifest V2 and a separate manifest. Build a Firefox package, then load it as a temporary add-on:
+
+1. Run the build script:
+   ```bash
+   ./prepare-firefox.sh
+   ```
+2. Open Firefox and go to `about:debugging`
+3. Click "This Firefox" → "Load Temporary Add-on"
+4. Choose `terse-firefox.xpi` (created in the project root)
+
+For signed distribution, submit `terse-firefox.xpi` (or the unpacked folder built from `manifest.firefox.json`) to addons.mozilla.org.
 
 ## Setup
 
