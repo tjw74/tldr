@@ -83,7 +83,7 @@ function getModelCost(model) {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'terse-summarize',
-    title: 'Summarize with Terse',
+    title: 'Summarize with tldr',
     contexts: ['page', 'selection']
   });
 });
@@ -330,7 +330,7 @@ async function handleSummarize(text) {
       console.error('Terse background: Full response:', JSON.stringify(data, null, 2));
       return {
         success: false,
-        error: 'No summary returned from API. The response may be empty or in an unexpected format. Check the extension service worker console (chrome://extensions -> Terse -> Service worker -> Inspect) for details.'
+        error: 'No summary returned from API. The response may be empty or in an unexpected format. Check the extension service worker console (chrome://extensions -> tldr -> Service worker -> Inspect) for details.'
       };
     }
 
